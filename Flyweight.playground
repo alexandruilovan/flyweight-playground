@@ -1,0 +1,103 @@
+import Foundation
+
+enum Formation {
+    case line
+    case arrow
+}
+
+enum Stance {
+    case aggresive
+    case defensive
+}
+
+protocol Unit {
+    func move(with stance: Stance, in formation: Formation)
+}
+
+class Fly: Unit {
+    private let description: String
+    
+    init(description: String) {
+        self.description = description
+    }
+    
+    func move(with stance: Stance, in formation: Formation) {
+        print("\(description) moving in \(formation) formation in an \(stance) stance")
+    }
+}
+
+class SwarmControl {
+    let swarm: [Fly]
+    let stance: Stance
+    let formation: Formation
+    
+    init(swarm: [Fly], stance: Stance, formation: Formation) {
+        self.swarm = swarm
+        self.stance = stance
+        self.formation = formation
+    }
+    
+    func executeFlyManoeuvre() {
+        swarm.map {
+            $0.move(with: stance, in: formation)
+        }
+    }
+}
+
+class FlyFactory {
+    enum FlyType {
+        case leader
+        case fighter
+    }
+    
+    static let shared = FlyFactory()
+    private var swarm = [FlyType: Fly]()
+    
+    private func createFly(of type: FlyType) -> Fly {
+        switch type {
+        case .fighter:
+            let fly = Fly(description: "Fighter Fly")
+            swarm[type] = fly
+            return fly
+        case .leader:
+            let fly = Fly(description: "Leader Fly")
+            swarm[type] = fly
+            return fly
+        }
+    }
+    
+    func deployFly(of type: FlyType) -> Fly {
+        if let fly = swarm[type] {
+            return fly
+        } else {
+            let fly = createFly(of: type)
+            return fly
+        }
+    }
+    
+    func swarmDescription() {
+        swarm.map {
+            print($0.key)
+        }
+    }
+}
+
+class FlyCommandApp {
+    func test() {
+        let factory = FlyFactory.shared
+        
+        let firstFly = factory.deployFly(of: .fighter)
+        let secondFly = factory.deployFly(of: .fighter)
+        let thirdFly = factory.deployFly(of: .fighter)
+        let forthFly = factory.deployFly(of: .leader)
+        
+        let swarm = [firstFly, secondFly, thirdFly, forthFly]
+        let swarmControl = SwarmControl(swarm: swarm, stance: .aggresive, formation: .arrow)
+        
+        swarmControl.executeFlyManoeuvre()
+        factory.swarmDescription()
+    }
+}
+
+let app = FlyCommandApp()
+app.test()
